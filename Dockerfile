@@ -51,8 +51,6 @@ COPY host-scripts/ /var/cache/app/
 COPY docker-scripts/entrypoint.sh /sbin/entrypoint.sh
 RUN chmod 755 /sbin/entrypoint.sh
 
-RUN apt-get install -y dbus
-
 # Cleanup
 RUN rm -rf /var/lib/apt/lists/*
 RUN rm -rf /prospect-mail
