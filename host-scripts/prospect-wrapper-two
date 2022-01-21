@@ -10,22 +10,22 @@ CONTAINER_NAME="prospect-two"
 CONFIG_PATH="${HOME}/.config/Prospect_Mail_Two/"
 
 
-
-
+# Container runtime (docker or podman)
+CONTAINER_ENGINE="podman"
 
 ########## Script
 
-PATH=/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+PATH=/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/cn/Documents/git/prospect-mail-docker/bin
 USER=${LOCAL_COMPUTER_USERNAME}
 
-# do we need to use sudo to start docker containers?
-(id -Gn | grep -q docker) || SUDO=sudo
+# do we need to use sudo to start podman containers?
+# (id -Gn | grep -q $CONTAINER_ENGINE) || SUDO=sudo
 
 USER_UID=$(id -u)
 USER_GID=$(id -g)
 
-XSOCK=/tmp/.X11-unix-prospectmailtwo
-XAUTH=/tmp/.docker.xauth-prospectmailtwo
+XSOCK=/home/cn/X/prospectTwo/.X11-unix
+XAUTH=/home/cn/X/prospectTwo/.docker.xauth
 
 DOWNLOAD_DIR=$(xdg-user-dir DOWNLOAD)
 if [ -z "${DOWNLOAD_DIR}" ]; then
@@ -35,20 +35,23 @@ fi
 list_commands() {
   echo ""
   echo "Launch prospect-mail using:"
-  echo "  prospect-mail                     OR "
-  echo "  prospect-wrapper-two prospect-mail"
+  echo "  prospect-wrapper prospect-mail"
   echo ""
   exit 1
 }
 
 cleanup_stopped_instances() {
   echo "Cleaning up stopped prospect-mail instances..."
-  for c in $(${SUDO} docker ps -a -q); do
-    image="$(${SUDO} docker inspect -f {{.Config.Image}} ${c})"
-    if [ "${image}" == ${IMAGE_NAME} ]; then
-      running=$(${SUDO} docker inspect -f {{.State.Running}} ${c})
+  for c in $(${SUDO} ${CONTAINER_ENGINE} ps -a -q); do
+    image="$(${SUDO} ${CONTAINER_ENGINE} inspect -f {{.Name}} ${c})"
+    if [ "${image}" == "${CONTAINER_NAME}" ]; then
+      running=$(${SUDO} ${CONTAINER_ENGINE} inspect -f {{.State.Running}} ${c})
       if [ "${running}" != "true" ]; then
-        ${SUDO} docker rm "${c}" >/dev/null
+        ${SUDO} ${CONTAINER_ENGINE} rm "${c}" >/dev/null
+      fi
+      if [ "${running}" == "true" ]; then
+        ${SUDO} ${CONTAINER_ENGINE} kill "${c}" >/dev/null
+        ${SUDO} ${CONTAINER_ENGINE} rm "${c}" >/dev/null
       fi
     fi
   done
@@ -63,8 +66,22 @@ prepare_docker_env_parameters() {
   ENV_VARS+=" --env=DBUS_SESSION_BUS_ADDRESS=unix:path=/run/dbus/system_bus_socket"
 }
 
-prepare_docker_volume_parameters() {
+create_x_folder() {
+  mkdir "/home/$USER/X/prospectTwo/"
   touch ${XAUTH}
+  touch ${XSOCK}
+}
+
+prepare_docker_volume_parameters() {
+  if [ -d "/home/$USER/X/prospectTwo/" ]; then
+    echo "$FILE exists."
+    rm -rf "/home/$USER/X/prospectTwo/"
+    create_x_folder
+  else
+    echo "$FILE does not exist."
+    create_x_folder
+  fi
+
   xauth nlist :0 | sed -e 's/^..../ffff/' | xauth -f ${XAUTH} nmerge -
 
   VOLUMES+=" --volume=${CONFIG_PATH}:/home/${USER}/.config/"
@@ -116,17 +133,13 @@ prepare_docker_device_parameters
 set -o xtrace
 
 echo "Starting ${prog}..."
-${SUDO} docker run -d \
+${SUDO} ${CONTAINER_ENGINE} run -d \
   --name ${CONTAINER_NAME} \
   --network host \
-  --privileged \
-  --memory=8g \
-  --shm-size=8g \
+  --memory=2g \
+  --shm-size=2g \
   --device /dev/dri \
   --device /dev/snd \
-  --cap-add=SYS_ADMIN \
-  -v /tmp/.X11-unix:/tmp/.X11-unix \
-  -e DISPLAY=unix$DISPLAY \
   ${ENV_VARS} \
   ${VIDEO_DEVICES} \
   ${VOLUMES} \

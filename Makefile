@@ -3,21 +3,21 @@ launch:
 	prospect-wrapper-two prospect-mail
 
 kill-containers:
-	docker kill prospect-one || docker kill prospect-two  # if error try kill other instance before exit
-	docker kill prospect-two
+	podman kill prospect-one || podman kill prospect-two  # if error try kill other instance before exit
+	podman kill prospect-two
 
 build:
-	docker build . -t stifstof/prospect-mail:latest
+	podman build . -t docker.io/stifstof/prospect-mail:latest
 
 install:
-	docker run -it --rm \
-	--volume /usr/local/bin:/target \
-	stifstof/prospect-mail:latest install
+	podman run -it --rm \
+	--volume ./bin:/target \
+	docker.io/stifstof/prospect-mail:latest install
 
 uninstall:
-	docker run -it --rm \
-	--volume /usr/local/bin:/target \
-	stifstof/prospect-mail:latest uninstall
+	podman run -it --rm \
+	--volume ./bin:/target \
+	docker.io/stifstof/prospect-mail:latest uninstall
 
 # convenience jobs
 
