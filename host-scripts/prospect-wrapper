@@ -17,8 +17,10 @@ CONTAINER_ENGINE="podman"
 PATH=/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/cn/Documents/git/prospect-mail-docker/bin
 USER=${LOCAL_COMPUTER_USERNAME}
 
-# do we need to use sudo to start podman containers?
-# (id -Gn | grep -q $CONTAINER_ENGINE) || SUDO=sudo
+# do we need to use sudo to start containers? (Check if Docker is part of wheel)
+if [ "$CONTAINER_ENGINE" == "docker" ]; then
+(id -Gn | grep -q $CONTAINER_ENGINE) || SUDO=sudo
+fi
 
 USER_UID=$(id -u)
 USER_GID=$(id -g)
