@@ -7,7 +7,10 @@ kill-containers:
 	podman kill prospect-two
 
 build:
-	podman build . -t docker.io/stifstof/prospect-mail:latest
+	podman build -t docker.io/stifstof/prospect-mail:latest .
+
+build-no-cache:
+	podman build --no-cache -t docker.io/stifstof/prospect-mail:latest .
 
 install:
 	podman run -it --rm \
@@ -20,6 +23,9 @@ uninstall:
 	docker.io/stifstof/prospect-mail:latest uninstall
 
 # convenience jobs
+
+push:
+	podman push docker.io/stifstof/prospect-mail:latest
 
 reinstall:
 	make uninstall
