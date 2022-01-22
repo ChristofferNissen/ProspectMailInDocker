@@ -25,6 +25,7 @@ uninstall:
 # convenience jobs
 
 push:
+	echo ${DOCKERHUB_STIFSTOF_PW} | podman login docker.io -u stifstof --password-stdin
 	podman push docker.io/stifstof/prospect-mail:latest
 
 reinstall:
@@ -35,3 +36,6 @@ reinstall:
 create-empty-config-folders:
 	mkdir ~/.config/Prospect_Mail_One/
 	mkdir ~/.config/Prospect_Mail_Two/
+
+add-to-path:
+	export PATH=$PATH:/home/cn/Documents/git/prospect-mail-docker/bin
