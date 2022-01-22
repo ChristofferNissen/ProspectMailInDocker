@@ -75,13 +75,9 @@ create_x_folder() {
 
 prepare_docker_volume_parameters() {
   if [ -d "/home/$USER/X/prospectOne/" ]; then
-    echo "$FILE exists."
     rm -rf "/home/$USER/X/prospectOne/"
-    create_x_folder
-  else
-    echo "$FILE does not exist."
-    create_x_folder
   fi
+  create_x_folder
 
   xauth nlist :0 | sed -e 's/^..../ffff/' | xauth -f ${XAUTH} nmerge -
 
@@ -131,9 +127,8 @@ prepare_docker_env_parameters
 prepare_docker_volume_parameters
 prepare_docker_device_parameters
 
-set -o xtrace
-
 echo "Starting ${prog}..."
+set -o xtrace
 ${SUDO} ${CONTAINER_ENGINE} run -d \
   --name ${CONTAINER_NAME} \
   --network host \
