@@ -1,8 +1,8 @@
-# Prospect Mail in Docker
+# Prospect Mail in Container
 ![](https://i.imgur.com/yI20s0A.png)
 
 
-This projects objective is to provide Prospect-Mail as a docker image to enable multiple accounts to be used simultaniously.
+This projects objective is to provide Prospect-Mail as a container to enable multiple accounts to be used simultaniously.
 
 The Makefile contains the relevant commands to use the application. The project works with two accounts, but can be extended to any number of accounts (not tested).
 
