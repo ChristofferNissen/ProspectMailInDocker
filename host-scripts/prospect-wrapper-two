@@ -12,9 +12,9 @@ CONFIG_PATH="${HOME}/.config/Prospect_Mail_Two/"
 # Container runtime (docker or podman)
 CONTAINER_ENGINE="${CONTAINER_ENGINE}"
 # Local .env
-if [ -f "/home/${LOCAL_COMPUTER_USERNAME}/Documents/git/prospect-mail-docker/.env" ]; then
+if [ -f "/home/$LOCAL_COMPUTER_USERNAME/Documents/git/prospect-mail-docker/.env" ]; then
     # Load Environment Variables
-    export $(cat .env | grep -v '#' | awk '/=/ {print $1}')
+    export $(cat /home/$LOCAL_COMPUTER_USERNAME/Documents/git/prospect-mail-docker/.env | grep -v '#' | awk '/=/ {print $1}')
     # For instance, will be example_kaggle_key
     echo $CONTAINER_ENGINE
 fi
