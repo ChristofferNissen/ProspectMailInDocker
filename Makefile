@@ -1,32 +1,34 @@
+include .env
+
 launch:
 	prospect-wrapper prospect-mail
 	prospect-wrapper-two prospect-mail
 
 kill-containers:
-	podman kill prospect-one || podman kill prospect-two  # if error try kill other instance before exit
-	podman kill prospect-two
+	${CONTAINER_ENGINE} kill prospect-one || ${CONTAINER_ENGINE} kill prospect-two  # if error try kill other instance before exit
+	${CONTAINER_ENGINE} kill prospect-two
 
 build:
-	podman build -t docker.io/stifstof/prospect-mail:latest .
+	${CONTAINER_ENGINE} build -t docker.io/stifstof/prospect-mail:latest -f Containerfile .
 
 build-no-cache:
-	podman build --no-cache -t docker.io/stifstof/prospect-mail:latest .
+	${CONTAINER_ENGINE} build --no-cache -t docker.io/stifstof/prospect-mail:latest -f Containerfile .
 
 install:
-	podman run -it --rm \
-	--volume ./bin:/target \
+	${CONTAINER_ENGINE} run -it --rm \
+	--volume ${PWD}/bin:/target \
 	docker.io/stifstof/prospect-mail:latest install
 
 uninstall:
-	podman run -it --rm \
-	--volume ./bin:/target \
+	${CONTAINER_ENGINE} run -it --rm \
+	--volume ${PWD}/bin:/target \
 	docker.io/stifstof/prospect-mail:latest uninstall
 
 # convenience jobs
 
 push:
-	echo ${DOCKERHUB_STIFSTOF_PW} | podman login docker.io -u stifstof --password-stdin
-	podman push docker.io/stifstof/prospect-mail:latest
+	echo ${DOCKERHUB_STIFSTOF_PW} | ${CONTAINER_ENGINE} login docker.io -u stifstof --password-stdin
+	${CONTAINER_ENGINE} push docker.io/stifstof/prospect-mail:latest
 
 reinstall:
 	make uninstall
@@ -39,3 +41,14 @@ create-empty-config-folders:
 
 add-to-path:
 	export PATH=$PATH:/home/cn/Documents/git/prospect-mail-docker/bin
+
+podman_runtime:
+	rm -f .env
+	echo "CONTAINER_ENGINE=podman" >> .env
+
+docker_runtime:
+	rm -f .env
+	echo "CONTAINER_ENGINE=docker" >> .env
+
+current_runtime:
+	cat .env

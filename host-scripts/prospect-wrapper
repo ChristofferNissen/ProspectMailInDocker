@@ -10,11 +10,23 @@ CONTAINER_NAME="prospect-one"
 CONFIG_PATH="${HOME}/.config/Prospect_Mail_One/"
 
 # Container runtime (docker or podman)
-CONTAINER_ENGINE="podman"
+CONTAINER_ENGINE="${CONTAINER_ENGINE}"
+# Local .env
+if [ -f "/home/${LOCAL_COMPUTER_USERNAME}/Documents/git/prospect-mail-docker/.env" ]; then
+    # Load Environment Variables
+    export $(cat .env | grep -v '#' | awk '/=/ {print $1}')
+    # For instance, will be example_kaggle_key
+    echo $CONTAINER_ENGINE
+fi
+if [ -z "$CONTAINER_ENGINE" ]
+then
+  echo "\$CONTAINER_ENGINE is empty. Defaulting to docker"
+  CONTAINER_ENGINE="docker"
+fi
 
 ########## Script
 
-PATH=/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/cn/Documents/git/prospect-mail-docker/bin
+PATH=/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/${LOCAL_COMPUTER_USERNAME}/Documents/git/prospect-mail-docker/bin
 USER=${LOCAL_COMPUTER_USERNAME}
 
 # do we need to use sudo to start containers? (Check if Docker is part of wheel)
@@ -25,8 +37,8 @@ fi
 USER_UID=$(id -u)
 USER_GID=$(id -g)
 
-XSOCK=/home/cn/X/prospectOne/.X11-unix
-XAUTH=/home/cn/X/prospectOne/.docker.xauth
+XSOCK=/home/${LOCAL_COMPUTER_USERNAME}/X/prospectOne/.X11-unix
+XAUTH=/home/${LOCAL_COMPUTER_USERNAME}/X/prospectOne/.docker.xauth
 
 DOWNLOAD_DIR=$(xdg-user-dir DOWNLOAD)
 if [ -z "${DOWNLOAD_DIR}" ]; then
@@ -56,6 +68,12 @@ cleanup_stopped_instances() {
       fi
     fi
   done
+}
+
+prepare_extra_arguments() {
+  if [ "$CONTAINER_ENGINE" == "docker" ]; then
+    EXTRA_DOCKER_ARGUMENTS+="--privileged"
+  fi
 }
 
 prepare_docker_env_parameters() {
@@ -126,6 +144,7 @@ cleanup_stopped_instances
 prepare_docker_env_parameters
 prepare_docker_volume_parameters
 prepare_docker_device_parameters
+prepare_extra_arguments
 
 echo "Starting ${prog}..."
 set -o xtrace
@@ -136,8 +155,8 @@ ${SUDO} ${CONTAINER_ENGINE} run -d \
   --shm-size=2g \
   --device /dev/dri \
   --device /dev/snd \
+  ${EXTRA_DOCKER_ARGUMENTS} \
   ${ENV_VARS} \
   ${VIDEO_DEVICES} \
   ${VOLUMES} \
-  ${EXTRA_DOCKER_ARGUMENTS} \
   ${IMAGE_NAME} ${prog} $@ >/dev/null
